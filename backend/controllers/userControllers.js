@@ -13,6 +13,31 @@ const upsertUser = asyncHandler(async (req, res) => {
     res.status(200).json(user);
 });
 
+const registerUser = asyncHandler(async (req, res) => {
+    const { uid, email, name, roles, permissions } = req.body;
+
+    if (!name) {
+        res.status(400);
+        throw new Error('Name are required');
+    }
+
+    if (!email) {
+        res.status(400);
+        throw new Error('Email are required');
+    }
+
+    const newUser = new User({
+        uid,
+        email,
+        name,
+        roles,
+        permissions,
+    });
+
+    const createdUser = await newUser.save();
+    res.status(201).json(createdUser);
+})
+
 const getUserProfile = asyncHandler(async (req, res) => {
     const { uid } = req.params;
 
@@ -29,4 +54,5 @@ const getUserProfile = asyncHandler(async (req, res) => {
 module.exports = {
     upsertUser,
     getUserProfile,
+    registerUser
 };
