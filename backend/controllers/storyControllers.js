@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler');
-const Story = require('../models/story');
+const Story = require('../models/Story');
 
 const createStory = asyncHandler(async (req, res) => {
     const { title, author, paragraphs, genre, thumbnailUrl, ages } = req.body;
