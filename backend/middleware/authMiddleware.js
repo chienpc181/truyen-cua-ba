@@ -57,23 +57,55 @@ const protectWhenRegistering = asyncHandler(async (req, res, next) => {
 })
 
 const authorize = (...allowedRoles) => {
-    return (req, res, next) => {
-        if (!req.user || !allowedRoles.includes(req.user.roles)) {
+    return asyncHandler(async (req, res, next) => {
+        try {
+            const token = req.headers.authorization.split(' ')[1];
+
+            if (!token) {
+                res.status(401);
+                throw new Error('Not authorized, no token');
+            }
+
+            const decodedToken = await admin.auth().verifyIdToken(token);
+
+            req.user = await User.findOne({ uid: decodedToken.uid });
+
+            if (!req.user || !allowedRoles.includes(req.user.role)) {
+                res.status(403);
+                throw new Error('Forbidden');
+            }
+
+            next();
+        } catch (error) {
             res.status(403);
             throw new Error('Forbidden');
         }
-        next();
-    };
+    });
 };
 
 const checkPermission = (permission) => {
-    return (req, res, next) => {
+    return asyncHandler(async (req, res, next) => {
+       try { const token = req.headers.authorization.split(' ')[1];
+
+        if (!token) {
+            res.status(401);
+            throw new Error('Not authorized, no token');
+        }
+
+        const decodedToken = await admin.auth().verifyIdToken(token);
+
+        req.user = await User.findOne({ uid: decodedToken.uid });
+
         if (!req.user || !req.user.permissions.includes(permission)) {
             res.status(403);
             throw new Error('Forbidden');
         }
         next();
-    };
+        } catch (error) {
+            res.status(403);
+            throw new Error('Forbidden');
+        }
+    });
 };
 
 module.exports = {
