@@ -68,9 +68,9 @@ const authorize = (...allowedRoles) => {
 
             const decodedToken = await admin.auth().verifyIdToken(token);
 
-            req.user = await User.findOne({ uid: decodedToken.uid });
+            const currentUser = await User.findOne({ uid: decodedToken.uid });
 
-            if (!req.user || !allowedRoles.includes(req.user.role)) {
+            if (!currentUser || !currentUser.roles.some(role => allowedRoles.includes(role))) {
                 res.status(403);
                 throw new Error('Forbidden');
             }
@@ -83,24 +83,29 @@ const authorize = (...allowedRoles) => {
     });
 };
 
-const checkPermission = (permission) => {
+const checkPermission = (...allowedPermissions) => {
     return asyncHandler(async (req, res, next) => {
-       try { const token = req.headers.authorization.split(' ')[1];
+        try {
+            const token = req.headers.authorization.split(' ')[1];
 
-        if (!token) {
-            res.status(401);
-            throw new Error('Not authorized, no token');
-        }
+            if (!token) {
+                res.status(401);
+                throw new Error('Not authorized, no token');
+            }
 
-        const decodedToken = await admin.auth().verifyIdToken(token);
+            const decodedToken = await admin.auth().verifyIdToken(token);
 
-        req.user = await User.findOne({ uid: decodedToken.uid });
+            const currentUser = await User.findOne({ uid: decodedToken.uid });
 
-        if (!req.user || !req.user.permissions.includes(permission)) {
-            res.status(403);
-            throw new Error('Forbidden');
-        }
-        next();
+            // if (!req.user || !req.user.permissions.includes(permission)) {
+            //     res.status(403);
+            //     throw new Error('Forbidden');
+            // }
+            if (!currentUser || !currentUser.permissions.some(permission => allowedPermissions.includes(permission))) {
+                res.status(403);
+                throw new Error('Forbidden');
+            }
+            next();
         } catch (error) {
             res.status(403);
             throw new Error('Forbidden');
