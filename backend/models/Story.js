@@ -1,10 +1,6 @@
 const mongoose = require('mongoose');
 
 const storySchema = mongoose.Schema({
-    // title: {
-    //     type: String,
-    //     required: [true, 'Title is required'],
-    // },
     title: {
         en: String,
         vi: String

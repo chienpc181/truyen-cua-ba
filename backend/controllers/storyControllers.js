@@ -41,40 +41,91 @@ const updateStory = asyncHandler(async (req, res) => {
 });
 
 const getStories = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, genre, author, sort = 'desc' } = req.query;
+    // Extract options from req.query
+    const { paginationOptions = {}, sortingOptions = {}, queryOptions = {} } = req.query;
 
-    const query = {};
+    // Destructure with defaults
+    const { page = 1, limit = 10 } = paginationOptions;
+    const { sort = 'asc' } = sortingOptions;
 
-    // Add genre and author filters if provided in the query parameters
-    if (genre) {
-        query.genre = genre;
-    }
+    // Create the query object dynamically from queryOptions
+    const query = { ...queryOptions };
 
-    if (author) {
-        query.author = author;
-    }
-
-    // Determine sort order based on the query parameter (asc or desc)
+    // Determine sort order and field
     const sortOrder = sort === 'asc' ? 1 : -1;
-
-    // If no query parameters are provided, retrieve the newest stories by creation date
     const sortOption = Object.keys(query).length === 0 ? { createdAt: -1 } : { title: sortOrder };
 
+    // Execute the query with pagination and sorting
     const stories = await Story.find(query)
         .select('title genre author ages thumbnailUrl description')
         .sort(sortOption)
-        .limit(limit * 1)
-        .skip((page - 1) * limit);
+        .limit(Number(limit))
+        .skip((Number(page) - 1) * Number(limit));
 
+    // Get total number of documents that match the query
     const totalStories = await Story.countDocuments(query);
-    const totalPages = Math.ceil(totalStories / limit);
+    const totalPages = Math.ceil(totalStories / Number(limit));
 
+    // Send the response
     res.json({
         stories,
         totalPages,
-        currentPage: page,
+        currentPage: Number(page),
     });
 });
+
+const searchStories = asyncHandler(async (req, res) => {
+    const { search, paginationOptions = {}, sortingOptions = {} } = req.query;
+    const { page = 1, limit = 10 } = paginationOptions;
+    const { sort = 'asc' } = sortingOptions;
+
+    // Create the query object
+    const query = {};
+
+    if (search) {
+        // Split the search sentence into individual words
+        const words = search.split(' ').map(word => word.trim()).filter(Boolean);
+
+        // Create an array of regex conditions for each word
+        const searchConditions = words.map(word => ({
+            $or: [
+                { 'title.en': { $regex: word, $options: 'i' } },
+                { 'title.vi': { $regex: word, $options: 'i' } },
+                { author: { $regex: word, $options: 'i' } },
+                { 'paragraphs.en': { $regex: word, $options: 'i' } },
+                { 'paragraphs.vi': { $regex: word, $options: 'i' } }
+            ]
+        }));
+
+        // Use $or to combine all regex conditions so that any word match will be considered
+        if (searchConditions.length > 0) {
+            query.$or = searchConditions;
+        }
+    }
+
+    // Determine sort order and field
+    const sortOrder = sort === 'asc' ? 1 : -1;
+    const sortOption = Object.keys(query).length === 0 ? { createdAt: -1 } : { title: sortOrder };
+
+    // Execute the query with pagination, sorting, and searching
+    const stories = await Story.find(query)
+        .select('title genre author ages thumbnailUrl description')
+        .sort(sortOption)
+        .limit(Number(limit))
+        .skip((Number(page) - 1) * Number(limit));
+
+    // Get total number of documents that match the query
+    const totalStories = await Story.countDocuments(query);
+    const totalPages = Math.ceil(totalStories / Number(limit));
+
+    // Send the response
+    res.json({
+        stories,
+        totalPages,
+        currentPage: Number(page),
+    });
+});
+
 
 const getStory = asyncHandler(async (req, res) => {
     const story = await Story.findById(req.params.id);
@@ -91,5 +142,6 @@ module.exports = {
     createStory,
     getStories,
     getStory,
-    updateStory
+    updateStory,
+    searchStories
 };
