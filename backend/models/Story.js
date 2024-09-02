@@ -15,7 +15,7 @@ const storySchema = mongoose.Schema({
     publishedDate: {
         type: Date,
     },
-    description: [
+    introduction: [
         {
             en: String,
             vi: String
@@ -27,9 +27,6 @@ const storySchema = mongoose.Schema({
             vi: String
         }
     ],
-    ages: {
-        type: String
-    },
     thumbnailUrl: {
         type: String
     }

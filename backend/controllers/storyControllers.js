@@ -2,7 +2,7 @@ const asyncHandler = require('express-async-handler');
 const Story = require('../models/Story');
 
 const createStory = asyncHandler(async (req, res) => {
-    const { title, author, paragraphs, genre, thumbnailUrl, ages } = req.body;
+    const { title, author, paragraphs, genre, thumbnailUrl, introduction } = req.body;
 
     if (!title) {
         res.status(400);
@@ -15,7 +15,7 @@ const createStory = asyncHandler(async (req, res) => {
         genre,
         paragraphs,
         thumbnailUrl,
-        ages
+        introduction
     });
 
     const createdStory = await story.save();
@@ -57,7 +57,7 @@ const getStories = asyncHandler(async (req, res) => {
 
     // Execute the query with pagination and sorting
     const stories = await Story.find(query)
-        .select('title genre author ages thumbnailUrl description')
+        .select('title genre author thumbnailUrl introduction')
         .sort(sortOption)
         .limit(Number(limit))
         .skip((Number(page) - 1) * Number(limit));
@@ -97,9 +97,9 @@ const searchStories = asyncHandler(async (req, res) => {
             ]
         }));
 
-        // Use $or to combine all regex conditions so that any word match will be considered
+        // Use $and to combine all regex conditions so that any word match will be considered
         if (searchConditions.length > 0) {
-            query.$or = searchConditions;
+            query.$and = searchConditions;
         }
     }
 
@@ -109,7 +109,7 @@ const searchStories = asyncHandler(async (req, res) => {
 
     // Execute the query with pagination, sorting, and searching
     const stories = await Story.find(query)
-        .select('title genre author ages thumbnailUrl description')
+        .select('title genre author thumbnailUrl introduction')
         .sort(sortOption)
         .limit(Number(limit))
         .skip((Number(page) - 1) * Number(limit));
