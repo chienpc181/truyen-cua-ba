@@ -48,6 +48,24 @@ const createPeopleStory = asyncHandler(async (req, res) => {
     res.status(201).json(createdPeople);
 });
 
+const updatePeopleStory = asyncHandler(async (req, res) => {
+    const story = await PeopleStory.findById(req.params.id);
+
+    if (!story) {
+        res.status(404);
+        throw new Error('Story not found');
+    }
+
+    // Loop through the request body and update only the provided fields
+    Object.keys(req.body).forEach(key => {
+        story[key] = req.body[key];
+    });
+
+    const updatedStory = await story.save();
+
+    res.json(updatedStory);
+});
+
 const getPeopleStories = asyncHandler(async (req, res) => {
     // Extract options from req.query
     const { paginationOptions = {}, sortingOptions = {}, queryOptions = {} } = req.query;
@@ -93,8 +111,26 @@ const getPeopleStory = asyncHandler(async (req, res) => {
     }
 });
 
+const getPeopleStoryByNameCode = asyncHandler(async (req, res) => {
+    try {
+      const story = await PeopleStory.findOne({ nameCode: req.params.nameCode });
+  
+      if (story) {
+        return res.status(200).json(story); // Return the story if found
+      } else {
+        res.status(404); // Set status to 404
+        throw new Error('Story not found'); // Throw an error to handle in your error middleware
+      }
+    } catch (error) {
+      res.status(500); // In case of server errors
+      throw new Error('Server Error');
+    }
+  });
+
 module.exports = {
     createPeopleStory,
     getPeopleStories,
-    getPeopleStory
+    getPeopleStory,
+    updatePeopleStory,
+    getPeopleStoryByNameCode
 };
