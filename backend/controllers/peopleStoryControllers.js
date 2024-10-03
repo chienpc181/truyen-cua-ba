@@ -1,0 +1,100 @@
+const asyncHandler = require('express-async-handler');
+const PeopleStory = require('../models/PeopleStory');
+
+const createPeopleStory = asyncHandler(async (req, res) => {
+    const {
+        name,
+        nameCode,
+        lifeTime,
+        thumbnailUrl,
+        category,
+        title,           // should be an object with 'en' and 'vi'
+        introduction,    // should be an array of objects
+        mainStory,       // should be an array of objects
+        quotes,          // should be an array of objects
+        facts,           // should be an array of objects
+        conclusion,      // should be an array of objects
+        isActive,
+        isPublished,
+        publishedDate
+    } = req.body;
+
+    // Check if title (both English and Vietnamese) is provided
+    if (!title || !title.en || !title.vi) {
+        res.status(400);
+        throw new Error('Both English and Vietnamese titles are required');
+    }
+
+    // Create a new PeopleStory document
+    const people = new PeopleStory({
+        name,
+        nameCode,
+        lifeTime,
+        thumbnailUrl,
+        category,
+        title,
+        introduction,
+        mainStory,
+        quotes,
+        facts,
+        conclusion,
+        isActive,
+        isPublished,
+        publishedDate
+    });
+
+    // Save the new document to the database
+    const createdPeople = await people.save();
+    res.status(201).json(createdPeople);
+});
+
+const getPeopleStories = asyncHandler(async (req, res) => {
+    // Extract options from req.query
+    const { paginationOptions = {}, sortingOptions = {}, queryOptions = {} } = req.query;
+
+    // Destructure with defaults
+    const { page = 1, limit = 10 } = paginationOptions;
+    const { sort = 'asc' } = sortingOptions;
+
+    // Create the query object dynamically from queryOptions
+    const query = { ...queryOptions };
+
+    // Determine sort order and field
+    const sortOrder = sort === 'asc' ? 1 : -1;
+    const sortOption = Object.keys(query).length === 0 ? { createdAt: -1 } : { name: sortOrder };
+
+    // Execute the query with pagination and sorting
+    const stories = await PeopleStory.find(query)
+        .select('name nameCode title introduction isActive isPublished publishedDate')
+        .sort(sortOption)
+        .limit(Number(limit))
+        .skip((Number(page) - 1) * Number(limit));
+
+    // Get total number of documents that match the query
+    const totalStories = await PeopleStory.countDocuments(query);
+    const totalPages = Math.ceil(totalStories / Number(limit));
+
+    // Send the response
+    res.json({
+        stories,
+        totalPages,
+        currentPage: Number(page),
+    });
+});
+
+const getPeopleStory = asyncHandler(async (req, res) => {
+    const story = await PeopleStory.findById(req.params.id);
+
+    if (story) {
+        res.status(200).json(story);
+    } else {
+        res.status(404);
+        throw new Error('Story not found');
+    }
+});
+
+module.exports = {
+    createPeopleStory,
+    getPeopleStories,
+    getPeopleStory
+};
