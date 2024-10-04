@@ -100,7 +100,7 @@ const getPeopleStories = asyncHandler(async (req, res) => {
 
     // Execute the query with pagination and sorting
     const stories = await PeopleStory.find(query)
-        .select('name nameCode title introduction isActive isPublished publishedDate status')
+        .select('name nameCode title introduction isActive isPublished publishedDate status createdAt updatedAt')
         .sort(sortOption)
         .limit(Number(limit))
         .skip((Number(page) - 1) * Number(limit));
