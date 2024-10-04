@@ -50,6 +50,9 @@ const peopleStorySchema = mongoose.Schema({
     },
     publishedDate: {
         type: Date
+    },
+    status: {
+        type: String
     }
 }, {
     timestamps: true

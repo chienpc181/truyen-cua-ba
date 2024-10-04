@@ -14,10 +14,21 @@ const createPeopleStory = asyncHandler(async (req, res) => {
         quotes,          // should be an array of objects
         facts,           // should be an array of objects
         conclusion,      // should be an array of objects
-        isActive,
-        isPublished,
-        publishedDate
+        isActive = true,
+        isPublished = false,
+        publishedDate,
+        status = 'Inprogress'
     } = req.body;
+
+    if (!name) {
+        res.status(400);
+        throw new Error('Name is required');
+    }
+
+    if (!nameCode) {
+        res.status(400);
+        throw new Error('Name is required');
+    }
 
     // Check if title (both English and Vietnamese) is provided
     if (!title || !title.en || !title.vi) {
@@ -40,7 +51,8 @@ const createPeopleStory = asyncHandler(async (req, res) => {
         conclusion,
         isActive,
         isPublished,
-        publishedDate
+        publishedDate,
+        status
     });
 
     // Save the new document to the database
@@ -72,18 +84,23 @@ const getPeopleStories = asyncHandler(async (req, res) => {
 
     // Destructure with defaults
     const { page = 1, limit = 10 } = paginationOptions;
-    const { sort = 'asc' } = sortingOptions;
+    const { sortField = 'createdAt', sort = 'asc' } = sortingOptions;
 
     // Create the query object dynamically from queryOptions
-    const query = { ...queryOptions };
+    const allowedFields = ['name', 'isActive', 'isPublished']; // Fields you allow for querying
+    const query = Object.keys(queryOptions)
+        .filter(key => allowedFields.includes(key))
+        .reduce((obj, key) => {
+            obj[key] = queryOptions[key];
+            return obj;
+        }, {});
 
     // Determine sort order and field
-    const sortOrder = sort === 'asc' ? 1 : -1;
-    const sortOption = Object.keys(query).length === 0 ? { createdAt: -1 } : { name: sortOrder };
+    const sortOption = { [sortField]: sort === 'asc' ? 1 : -1 };
 
     // Execute the query with pagination and sorting
     const stories = await PeopleStory.find(query)
-        .select('name nameCode title introduction isActive isPublished publishedDate')
+        .select('name nameCode title introduction isActive isPublished publishedDate status')
         .sort(sortOption)
         .limit(Number(limit))
         .skip((Number(page) - 1) * Number(limit));
@@ -97,8 +114,10 @@ const getPeopleStories = asyncHandler(async (req, res) => {
         stories,
         totalPages,
         currentPage: Number(page),
+        totalStories
     });
 });
+
 
 const getPeopleStory = asyncHandler(async (req, res) => {
     const story = await PeopleStory.findById(req.params.id);
