@@ -87,7 +87,7 @@ const getPeopleStories = asyncHandler(async (req, res) => {
     const { sortField = 'createdAt', sort = 'asc' } = sortingOptions;
 
     // Create the query object dynamically from queryOptions
-    const allowedFields = ['name', 'isActive', 'isPublished']; // Fields you allow for querying
+    const allowedFields = ['name', 'isActive', 'isPublished', 'status']; // Fields you allow for querying
     const query = Object.keys(queryOptions)
         .filter(key => allowedFields.includes(key))
         .reduce((obj, key) => {
