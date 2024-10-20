@@ -20,6 +20,7 @@ app.get('/api', (req, res) => {
 app.use('/api/users', require('./routes/userRoutes'))
 app.use('/api/stories', require('./routes/storyRoutes'));
 app.use('/api/peopleStories', require('./routes/peopleStoryRoutes'));
+app.use('/api/fairyStories', require('./routes/fairyStoryRoutes'));
 
 // Error-handling middleware
 app.use(errorHandler)

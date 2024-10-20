@@ -8,16 +8,7 @@ const textLang = {
         type: String
     }
 }
-const textLangRequired = {
-    en: {
-        type: String,
-        required: [true, 'Title in English is required'],
-    },
-    vi: {
-        type: String,
-        required: [true, 'Title in Vietnamese is required'],
-    }
-}
+
 const fairyStorySchema = mongoose.Schema({
     title: {
         en: {
@@ -39,6 +30,7 @@ const fairyStorySchema = mongoose.Schema({
             required: [true, 'Name Code in Vietnamese is required'],
         }
     },
+    versionName: textLang,
     author: {
         type: String,
         required: [true, 'Author is required'],
@@ -47,8 +39,11 @@ const fairyStorySchema = mongoose.Schema({
         type: String,
     },
     introduction: [textLang],
-    paragraphs: [textLang],
+    mainStory: [textLang],
     thumbnailUrl: {
+        type: String
+    },
+    illustrationUrl: {
         type: String
     },
     isActive: {
@@ -59,6 +54,9 @@ const fairyStorySchema = mongoose.Schema({
     },
     publishedDate: {
         type: Date
+    },
+    status: {
+        type: String
     }
 }, {
     timestamps: true
