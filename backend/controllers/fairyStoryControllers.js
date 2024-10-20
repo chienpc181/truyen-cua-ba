@@ -90,7 +90,7 @@ const getFairyStories = asyncHandler(async (req, res) => {
 
     // Execute the query with pagination and sorting
     const stories = await FairyStory.find(query)
-        .select('nameCode title versionName introduction isActive isPublished publishedDate status createdAt updatedAt')
+        .select('nameCode title versionName introduction thumbnailUrl illustrationUrl isActive isPublished publishedDate status createdAt updatedAt')
         .sort(sortOption)
         .limit(Number(limit))
         .skip((Number(page) - 1) * Number(limit));
