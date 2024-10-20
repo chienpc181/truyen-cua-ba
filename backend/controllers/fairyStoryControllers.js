@@ -3,7 +3,6 @@ const FairyStory = require('../models/FairyStory');
 
 const createFairyStory = asyncHandler(async (req, res) => {
     const {
-        name,
         nameCode,
         versionName,
         author,
@@ -19,14 +18,9 @@ const createFairyStory = asyncHandler(async (req, res) => {
         status = 'Inprogress'
     } = req.body;
 
-    if (!name) {
-        res.status(400);
-        throw new Error('Name is required');
-    }
-
     if (!nameCode) {
         res.status(400);
-        throw new Error('Name is required');
+        throw new Error('Name code is required');
     }
 
     // Check if title (both English and Vietnamese) is provided
@@ -36,7 +30,6 @@ const createFairyStory = asyncHandler(async (req, res) => {
     }
 
     const fairyStory = new FairyStory({
-        name,
         nameCode,
         versionName,
         author,
@@ -84,7 +77,7 @@ const getFairyStories = asyncHandler(async (req, res) => {
     const { sortField = 'createdAt', sort = 'asc' } = sortingOptions;
 
     // Create the query object dynamically from queryOptions
-    const allowedFields = ['name', 'isActive', 'isPublished', 'status']; // Fields you allow for querying
+    const allowedFields = ['isActive', 'isPublished', 'status']; // Fields you allow for querying
     const query = Object.keys(queryOptions)
         .filter(key => allowedFields.includes(key))
         .reduce((obj, key) => {
@@ -97,7 +90,7 @@ const getFairyStories = asyncHandler(async (req, res) => {
 
     // Execute the query with pagination and sorting
     const stories = await FairyStory.find(query)
-        .select('name nameCode title introduction isActive isPublished publishedDate status createdAt updatedAt')
+        .select('nameCode title versionName introduction isActive isPublished publishedDate status createdAt updatedAt')
         .sort(sortOption)
         .limit(Number(limit))
         .skip((Number(page) - 1) * Number(limit));
