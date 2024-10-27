@@ -8,7 +8,7 @@ router.post('/', createFairyStory);
 // router.post('/:id', protect, authorize('admin', 'super admin'), updatePeopleStory);
 router.post('/:id', updateFairyStory);
 router.get('/', getFairyStories);
-// router.get('/:id', getPeopleStory);
+router.get('/:id', getFairyStory);
 router.get('/:nameCode', getFairyStoryByNameCode);
 
 module.exports = router;
