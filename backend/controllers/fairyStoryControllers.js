@@ -77,7 +77,7 @@ const getFairyStories = asyncHandler(async (req, res) => {
     const { sortField = 'createdAt', sort = 'asc' } = sortingOptions;
 
     // Create the query object dynamically from queryOptions
-    const allowedFields = ['isActive', 'isPublished', 'status']; // Fields you allow for querying
+    const allowedFields = ['isActive', 'isPublished', 'status', 'category']; // Fields you allow for querying
     const query = Object.keys(queryOptions)
         .filter(key => allowedFields.includes(key))
         .reduce((obj, key) => {
