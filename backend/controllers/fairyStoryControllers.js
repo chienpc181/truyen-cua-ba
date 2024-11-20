@@ -122,19 +122,28 @@ const getFairyStory = asyncHandler(async (req, res) => {
 
 const getFairyStoryByNameCode = asyncHandler(async (req, res) => {
     try {
-      const story = await FairyStory.findOne({ nameCode: req.params.nameCode });
-  
-      if (story) {
-        return res.status(200).json(story); // Return the story if found
-      } else {
-        res.status(404); // Set status to 404
-        throw new Error('Story not found'); // Throw an error to handle in your error middleware
-      }
+        // Try to find the story in English
+        let story = await FairyStory.findOne({ 'nameCode.en': req.params.nameCode });
+
+        // If not found, try to find the story in Vietnamese
+        if (!story) {
+            story = await FairyStory.findOne({ 'nameCode.vi': req.params.nameCode });
+        }
+
+        // Return the story if found
+        if (story) {
+            return res.status(200).json(story);
+        }
+
+        // Story not found
+        return res.status(404).json({ message: 'Story not found' });
     } catch (error) {
-      res.status(500); // In case of server errors
-      throw new Error('Server Error');
+        console.error('Error fetching story:', error.message);
+
+        // Handle unexpected server errors
+        return res.status(500).json({ message: 'Server Error', error: error.message });
     }
-  });
+});
 
 module.exports = {
     createFairyStory,
