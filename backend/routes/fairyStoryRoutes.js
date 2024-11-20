@@ -9,6 +9,6 @@ router.post('/', createFairyStory);
 router.post('/:id', updateFairyStory);
 router.get('/', getFairyStories);
 router.get('/:id', getFairyStory);
-router.get('/:nameCode', getFairyStoryByNameCode);
+router.get('/nameCode/:nameCode', getFairyStoryByNameCode);
 
 module.exports = router;
