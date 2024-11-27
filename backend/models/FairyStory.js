@@ -20,15 +20,9 @@ const fairyStorySchema = mongoose.Schema({
             required: [true, 'Title in Vietnamese is required'],
         }
     },
-    nameCode: {
-        en: {
-            type: String,
-            required: [true, 'Name Code in English is required'],
-        },
-        vi: {
-            type: String,
-            required: [true, 'Name Code in Vietnamese is required'],
-        }
+    storyId: {
+        type: String,
+        required: [true, 'StoryId is required'],
     },
     versionName: textLang,
     author: {

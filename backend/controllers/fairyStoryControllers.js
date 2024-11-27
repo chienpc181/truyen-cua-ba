@@ -3,7 +3,7 @@ const FairyStory = require('../models/FairyStory');
 
 const createFairyStory = asyncHandler(async (req, res) => {
     const {
-        nameCode,
+        storyId,
         versionName,
         author,
         thumbnailUrl,
@@ -18,9 +18,9 @@ const createFairyStory = asyncHandler(async (req, res) => {
         status = 'Inprogress'
     } = req.body;
 
-    if (!nameCode) {
+    if (!storyId) {
         res.status(400);
-        throw new Error('Name code is required');
+        throw new Error('StoryId is required');
     }
 
     // Check if title (both English and Vietnamese) is provided
@@ -30,7 +30,7 @@ const createFairyStory = asyncHandler(async (req, res) => {
     }
 
     const fairyStory = new FairyStory({
-        nameCode,
+        storyId,
         versionName,
         author,
         thumbnailUrl,
@@ -90,7 +90,7 @@ const getFairyStories = asyncHandler(async (req, res) => {
 
     // Execute the query with pagination and sorting
     const stories = await FairyStory.find(query)
-        .select('nameCode title versionName category introduction thumbnailUrl illustrationUrl isActive isPublished publishedDate status createdAt updatedAt')
+        .select('storyId title versionName category introduction thumbnailUrl illustrationUrl isActive isPublished publishedDate status createdAt updatedAt')
         .sort(sortOption)
         .limit(Number(limit))
         .skip((Number(page) - 1) * Number(limit));
@@ -120,15 +120,10 @@ const getFairyStory = asyncHandler(async (req, res) => {
     }
 });
 
-const getFairyStoryByNameCode = asyncHandler(async (req, res) => {
+const getFairyStoryById = asyncHandler(async (req, res) => {
     try {
         // Try to find the story in English
-        let story = await FairyStory.findOne({ 'nameCode.en': req.params.nameCode });
-
-        // If not found, try to find the story in Vietnamese
-        if (!story) {
-            story = await FairyStory.findOne({ 'nameCode.vi': req.params.nameCode });
-        }
+        let story = await FairyStory.findOne({ storyId: req.params.storyId });
 
         // Return the story if found
         if (story) {
@@ -150,5 +145,5 @@ module.exports = {
     updateFairyStory,
     getFairyStories,
     getFairyStory,
-    getFairyStoryByNameCode
+    getFairyStoryById
 };
